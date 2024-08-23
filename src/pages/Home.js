@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { firestore as db } from '../firebase';
 import { collection, addDoc } from 'firebase/firestore';
 import { IoIosSend, IoMdCall } from 'react-icons/io';
-import { FaDog, FaGetPocket, FaLocationArrow, FaPhone, FaUser } from 'react-icons/fa';
+import { FaDog, FaGetPocket, FaLocationArrow, FaPhone, FaTaxi, FaUser } from 'react-icons/fa';
 import { FaBoxesPacking, FaLocationDot, FaLocationPin, FaPerson, FaUserGroup } from 'react-icons/fa6';
 import { IoCheckmarkDoneCircle, IoTime } from 'react-icons/io5';
-import { MdAlternateEmail, MdContactPhone, MdOutlineAlternateEmail } from 'react-icons/md';
+import { MdAlternateEmail, MdCallMissedOutgoing, MdContactPhone, MdDateRange, MdOutlineAlternateEmail } from 'react-icons/md';
 import { AiFillMessage } from 'react-icons/ai';
 
 function Home() {
@@ -15,12 +15,19 @@ function Home() {
     animal: false,
     packages: false,
     date: '',
+    time:'',
     email: '',
     phone: '',
     name: ''
   });
+  const [contactFormData, setContactFormData] = useState({
+    fullName: '',
+    email: '',
+    message: ''
+  });
+  
   const [showDone, setshowDone] = useState(false)
-
+  const [showDoneContact, setshowDoneContact] = useState(false)
   const [toSug, settoSug] = useState([])
   const [fromSug, setfromSug] = useState([])
 
@@ -77,6 +84,34 @@ function Home() {
       console.error("Error adding document: ", error);
     }
   };
+  const handleContactChange = (e) => {
+    const { name, value } = e.target;
+    setContactFormData({
+      ...contactFormData,
+      [name]: value
+    });
+  };
+  const handleContactSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await addDoc(collection(db, 'contacts'), {
+        ...contactFormData,
+        timestamp: new Date()
+      });
+      setshowDoneContact(true)
+      setTimeout(() => {
+        setshowDoneContact(false)
+      }, 3000);
+      setContactFormData({
+        fullName: '',
+        email: '',
+        message: ''
+      });
+      e.target.reset();
+    } catch (error) {
+      console.error("Error adding document: ", error);
+    }
+  };
   return (
     <div className='Home'>
 
@@ -85,7 +120,7 @@ function Home() {
           <h1>Taxi&VTC.</h1>
           <div>
             <a href='#booking'>Réservez</a>
-            <a href='contactUs'><IoMdCall />Appelle-Nous</a>
+            <a href='tel:+33749427104'><IoMdCall />Appelle-Nous</a>
           </div>
         </div>
       </nav>
@@ -118,6 +153,37 @@ function Home() {
         </div>
       </section>
 
+      {/* Pricing Section */}
+      <section className='pricing'>
+        <h1>des tarifs fix</h1>
+        <span></span>
+        <div className='pricingHolder'>
+          <div>
+            <span></span>
+            <label>80€</label>
+            <p><FaLocationPin/>Aéroport CDG</p>
+            <p><MdCallMissedOutgoing />Paris</p>
+          </div>
+          <div>
+            <span></span>
+            <label>60€</label>
+            <p><FaLocationPin/>Aéroport Orly</p>
+            <p><MdCallMissedOutgoing />Paris</p>
+          </div>
+          <div>
+            <span></span>
+            <label>39€</label>
+            <p><FaLocationPin/>Paris</p>
+            <p><MdCallMissedOutgoing />Paris</p>
+          </div>
+        </div>
+        <div className='pracingHeureHolder'>
+          <span></span>
+          <label>70€ / Heure</label>
+          <p><FaTaxi />Mise à disposition</p>
+        </div>
+      </section>
+
       {/* Booking Section */}
       <section className="booking" id='booking'>
         
@@ -125,14 +191,14 @@ function Home() {
           <IoCheckmarkDoneCircle />
           nous vous appellerons sur votre numéro
         </div>}
-        <h2>Réservez votre taxi en ligne</h2>
+        <h2><FaTaxi />Réservez votre taxi en ligne</h2>
         <form onChange={handleChange} onSubmit={handleSubmit}>
           <span>
             <div>
             <label>
-            <FaLocationPin />D'où
+            <FaLocationPin />Départ
             </label>
-            <input type="text" name="from" id='from' placeholder="Taper D'où" required onChange={(event)=>handleAutoCompleteFrom(event)}/>
+            <input type="text" name="from" id='from' placeholder="Taper Départ" required onChange={(event)=>handleAutoCompleteFrom(event)}/>
             {fromSug.length >=1 && <div className='autoComplete'>
               {fromSug.map(to => (<div className='suggsetion' data-value={to?.properties?.name || to?.properties?.formatted } onClick={(e)=>{
                 document.getElementById("from").value = e.target?.getAttribute("data-value");
@@ -145,10 +211,10 @@ function Home() {
           </div>
           <div>
             <label>
-            <FaLocationArrow />Où
+            <FaLocationArrow />Arrivée
               
             </label>
-            <input type="text" name="to" id='to' placeholder="Taper Où" required onChange={(event)=>handleAutoComplete(event)}/>
+            <input type="text" name="to" id='to' placeholder="Taper Arrivée" required onChange={(event)=>handleAutoComplete(event)}/>
             {toSug.length >=1 && <div className='autoComplete'>
               {toSug.map(to => (<div className='suggsetion' data-value={to?.properties?.name || to?.properties?.formatted} onClick={(e)=>{
                 document.getElementById("to").value = e.target?.getAttribute("data-value");
@@ -163,7 +229,7 @@ function Home() {
           <span>
           <div>
             <label>
-            <FaUserGroup />Nombre de places
+            <FaUserGroup />NB.Places
               
             </label>
             <input type="number" defaultValue={1} name="seats" placeholder="Taper Nombre de places" required />
@@ -191,8 +257,16 @@ function Home() {
             <IoTime />Time
               
             </label>
-            <input type="time" name="date" required />
-          </div></span>
+            <input type="time" name="time" required />
+          </div>
+          <div>
+            <label>
+            <MdDateRange />Date
+              
+            </label>
+            <input type="date" name="date"  />
+          </div>
+          </span>
           <span>
           <div>
             <label>
@@ -224,35 +298,41 @@ function Home() {
 
       {/* Footer Section */}
       <footer>
-        <div className='contactUs'>
-          <h3> <MdContactPhone />Contactez-Nous</h3>
-          <span>Contactez-Nous Contactez-Nous Contactez-Nous</span>
-          <span>Contactez-Nous Contactez-Nous Contactez-Nous</span>
-          <span>Contactez-Nous Contactez-Nous Contactez-Nous</span>
-          {/* <p>vous pouvez nous contacter directement, remplissez simplement le formulaire ci-dessous</p> */}
-          <form>
-            
-            <div>
-              <label><MdOutlineAlternateEmail />Email</label>
-              <input type="email" placeholder="Votre email" required />
+      <div className="ContactUs">
+        {showDoneContact && <div className='bookingSent'>
+            <IoCheckmarkDoneCircle />
+            nous vous enverrons un e-mail
+          </div>}
+            <div className='innerContactUs'>
+                <form onSubmit={handleContactSubmit}>
+                    <h1>Contactez Nous</h1>
+                    <div>
+                        <label><FaUser/>Nom et Prénom</label>
+                        <input type='text' required value={contactFormData.fullName} onChange={handleContactChange} name="fullName" placeholder='Taper Nom et Prénom...'></input>
+                    </div>
+                    <div>
+                        <label><MdOutlineAlternateEmail/>Email</label>
+                        <input type='email' placeholder='Taper Email...' required value={contactFormData.email} onChange={handleContactChange} name="email"></input>
+                    </div>
+                    <div>
+                        <label><AiFillMessage/>Message</label>
+                        <textarea placeholder='Taper Message...' required value={contactFormData.message}onChange={handleContactChange}name="message"></textarea>
+                    </div>
+                    <input type='submit' className='submitInContact' value="Envoyer"></input>
+                </form>
+                <div className='contactUsSus'>
+                    <h1>Nous serions ravis de vous entendre.</h1>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <div></div>
+                </div>
             </div>
-            <div>
-              <label><FaUser />Nom Et Prenom</label>
-              <input type="text" placeholder="Votre nom et prenom" required />
-            </div>
-            <div>
-              <label><AiFillMessage />Message</label>
-              <textarea placeholder='votre message' required></textarea>
-            </div>
-            
-            <button type="submit"><IoIosSend />envoyer</button>
-          </form>
         </div>
-        <div>
-          <h3>Contactez-nous</h3>
-          <p>Email contact@trocar.com</p>
-          <p>Téléphone: +123 456 7890</p>
-          <p>Adresse: 123 Rue de Taxi, Ville, Pays</p>
+        <div className='ContactInfos'>
+          <p><MdOutlineAlternateEmail/> taxi.vtc1@gmail.com</p>
+          <p><MdContactPhone/> +33 749 427 104</p>
+          <p><FaLocationPin/> 95700 Roissy-en-France, France</p>
         </div>
       </footer>
     </div>
