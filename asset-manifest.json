@@ -1,0 +1,14 @@
+{
+  "files": {
+    "main.css": "/static/css/main.c3cae4ef.css",
+    "main.js": "/static/js/main.62687f2c.js",
+    "static/media/taxi.jpg": "/static/media/taxi.296d166e0aa873b90565.jpg",
+    "index.html": "/index.html",
+    "main.c3cae4ef.css.map": "/static/css/main.c3cae4ef.css.map",
+    "main.62687f2c.js.map": "/static/js/main.62687f2c.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.c3cae4ef.css",
+    "static/js/main.62687f2c.js"
+  ]
+}
